@@ -2,6 +2,8 @@ package com.waterhub.web.model;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -41,6 +43,12 @@ public class User implements Serializable {
 
     @Column(name = "user_address", nullable = false)
     private String address;
+
+    @Column(name = "user_latitude", nullable = false)
+    private Double latitude;
+
+    @Column(name = "user_longitude", nullable = false)
+    private Double longitude;
 
     @Column(name = "user_created_at", nullable = false)
     private Date createdAt;
@@ -132,6 +140,22 @@ public class User implements Serializable {
         this.address = address;
     }
 
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
     public Date getCreatedAt() {
         return createdAt;
     }
@@ -154,6 +178,20 @@ public class User implements Serializable {
 
     public void setRole(Role role) {
         roles.add(role);
+    }
+
+    public static String passwordEncoder(String userPassword) throws NoSuchAlgorithmException {
+        StringBuilder userPasswordEncode = new StringBuilder();
+        MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+        messageDigest.update(userPassword.getBytes());
+
+        byte userPasswordByte[] = messageDigest.digest();
+
+        for (byte b : userPasswordByte) {
+            userPasswordEncode.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
+        }
+
+        return userPasswordEncode.toString();
     }
 
     @Override
