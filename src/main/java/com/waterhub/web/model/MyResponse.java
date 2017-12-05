@@ -1,7 +1,5 @@
 package com.waterhub.web.model;
 
-import org.springframework.stereotype.Component;
-
 import java.io.Serializable;
 
 public class MyResponse<T> implements Serializable {

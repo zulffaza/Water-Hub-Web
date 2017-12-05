@@ -50,11 +50,20 @@ public class User implements Serializable {
     @Column(name = "user_longitude", nullable = false)
     private Double longitude;
 
+    @Column(name = "user_picture")
+    private String picture;
+
     @Column(name = "user_created_at", nullable = false)
     private Date createdAt;
 
     @ManyToMany(mappedBy = "users")
     private List<Role> roles = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "user",
+            cascade = { CascadeType.ALL }
+    )
+    private List<Store> stores = new ArrayList<>();
 
     public User() {
 
@@ -156,6 +165,14 @@ public class User implements Serializable {
         this.longitude = longitude;
     }
 
+    public String getPicture() {
+        return picture;
+    }
+
+    public void setPicture(String picture) {
+        this.picture = picture;
+    }
+
     public Date getCreatedAt() {
         return createdAt;
     }
@@ -178,6 +195,22 @@ public class User implements Serializable {
 
     public void setRole(Role role) {
         roles.add(role);
+    }
+
+    public List<Store> getStores() {
+        return stores;
+    }
+
+    public void setStores(List<Store> stores) {
+        this.stores = stores;
+    }
+
+    public Store getStore(int index) {
+        return stores.get(index);
+    }
+
+    public void setStore(Store store) {
+        stores.add(store);
     }
 
     public static String passwordEncoder(String userPassword) throws NoSuchAlgorithmException {
