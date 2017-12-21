@@ -1,5 +1,6 @@
 package com.waterhub.web.RESTController;
 
+import com.waterhub.web.model.MyPage;
 import com.waterhub.web.model.MyResponse;
 import com.waterhub.web.model.Role;
 import com.waterhub.web.service.RoleService;
@@ -7,6 +8,7 @@ import com.waterhub.web.serviceImpl.RoleServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
@@ -58,9 +60,9 @@ public class RoleRESTController {
     }
 
     @GetMapping("/api/role/page/{page}")
-    public MyResponse<List<Role>> findAllPageable(@PathVariable Integer page,
-                                                  @RequestParam(required = false, defaultValue = "10") Integer pageSize,
-                                                  @RequestParam(required = false, defaultValue = "1") Integer sort) {
+    public MyResponse<MyPage<List<Role>>> findAllPageable(@PathVariable Integer page,
+                                                         @RequestParam(required = false, defaultValue = "10") Integer pageSize,
+                                                         @RequestParam(required = false, defaultValue = "1") Integer sort) {
         int sortPropertiesIndex = 0;
         int sortDirectionIndex = 0;
 
@@ -83,11 +85,21 @@ public class RoleRESTController {
 
         Sort sortObj = new Sort(sortDirection, sortProperties);
         PageRequest pageRequest = new PageRequest(page, pageSize, sortObj);
+        Page<Role> rolePage = roleService.findAll(pageRequest);
 
+        List<Role> data = rolePage.getContent();
         String message = "Find roles success";
-        List<Role> data = roleService.findAll(pageRequest).getContent();
 
-        return new MyResponse<>(message, data);
+        MyPage<List<Role>> myPage = new MyPage<>();
+
+        myPage.setPage(++page);
+        myPage.setLastPage(rolePage.getTotalPages() == 0 ? 1 : rolePage.getTotalPages());
+        myPage.setPageSize(pageSize);
+        myPage.setSort(sort);
+        myPage.setTotalElement(rolePage.getTotalElements());
+        myPage.setData(data);
+
+        return new MyResponse<>(message, myPage);
     }
 
     @GetMapping("/api/role/{roleId}")

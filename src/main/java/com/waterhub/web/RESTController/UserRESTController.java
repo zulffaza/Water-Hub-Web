@@ -1,16 +1,17 @@
 package com.waterhub.web.RESTController;
 
-import com.waterhub.web.model.MyResponse;
-import com.waterhub.web.model.User;
+import com.waterhub.web.model.*;
 import com.waterhub.web.service.UserService;
 import com.waterhub.web.serviceImpl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,9 +58,9 @@ public class UserRESTController {
     }
 
     @GetMapping("/api/user/page/{page}")
-    public MyResponse<List<User>> findAllPageable(@PathVariable Integer page,
-                                                  @RequestParam(required = false, defaultValue = "10") Integer pageSize,
-                                                  @RequestParam(required = false, defaultValue = "1") Integer sort) {
+    public MyResponse<MyPage<List<User>>> findAllPageable(@PathVariable Integer page,
+                                                         @RequestParam(required = false, defaultValue = "10") Integer pageSize,
+                                                         @RequestParam(required = false, defaultValue = "1") Integer sort) {
         int sortPropertiesIndex = 0;
         int sortDirectionIndex = 0;
 
@@ -82,11 +83,21 @@ public class UserRESTController {
 
         Sort sortObj = new Sort(sortDirection, sortProperties);
         PageRequest pageRequest = new PageRequest(page, pageSize, sortObj);
+        Page<User> userPage = userService.findAll(pageRequest);
 
+        List<User> data = userPage.getContent();
         String message = "Find users success";
-        List<User> data = userService.findAll(pageRequest).getContent();
 
-        return new MyResponse<>(message, data);
+        MyPage<List<User>> myPage = new MyPage<>();
+
+        myPage.setPage(++page);
+        myPage.setLastPage(userPage.getTotalPages() == 0 ? 1 : userPage.getTotalPages());
+        myPage.setPageSize(pageSize);
+        myPage.setSort(sort);
+        myPage.setTotalElement(userPage.getTotalElements());
+        myPage.setData(data);
+
+        return new MyResponse<>(message, myPage);
     }
 
     @GetMapping("/api/user/{userId}")
@@ -103,6 +114,35 @@ public class UserRESTController {
         String message = data ? "User is exist" : "User doesn't exist";
 
         return new MyResponse<>(message, data);
+    }
+
+    @PostMapping("/api/user/verify-user")
+    public MyResponse<User> verifyUser(@RequestBody Login login) {
+        String message;
+
+        User user = userService.findOne(login.getEmail());
+
+        if (user != null) {
+            try {
+                String password = User.passwordEncoder(login.getPassword());
+
+                if (user.getPassword().equals(password)) {
+                    for (Role role : user.getRoles())
+                        role.getUsers().clear();
+
+                    message = "Login success";
+                } else {
+                    message = "Login failed - Password Invalid";
+                    user = null;
+                }
+            } catch (NoSuchAlgorithmException e) {
+                message = "Login failed - Internal Server Error";
+                user = null;
+            }
+        } else
+            message = "Login failed - Email Not Found";
+
+        return new MyResponse<>(message, user);
     }
 
     @PostMapping("/api/user/save")

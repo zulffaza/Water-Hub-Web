@@ -1,5 +1,7 @@
 package com.waterhub.web.model;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.security.MessageDigest;
@@ -53,6 +55,7 @@ public class User implements Serializable {
     @Column(name = "user_picture")
     private String picture;
 
+    @CreationTimestamp
     @Column(name = "user_created_at", nullable = false)
     private Date createdAt;
 

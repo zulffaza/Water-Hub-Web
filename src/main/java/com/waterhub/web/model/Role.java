@@ -17,7 +17,7 @@ public class Role implements Serializable {
     @Column(name = "role_name", nullable = false, unique = true)
     private String name;
 
-    @ManyToMany()
+    @ManyToMany
     @JoinTable(
             name = "user_role",
             joinColumns = @JoinColumn(name = "role_id"),

@@ -16,6 +16,7 @@ public interface UserService {
     public Boolean isExist(long userId);
     public User findOne(User user);
     public User findOne(long userId);
+    public User findOne(String email);
     public void delete(User user);
     public void delete(long userId);
 }
