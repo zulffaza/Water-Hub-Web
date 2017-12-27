@@ -73,8 +73,12 @@ public class UserRESTController {
         if (pageSize <= 0)
             pageSize = 10;
 
-        if (sort >= 1 && sort <= 16)
-            sortDirectionIndex = sort - 1;
+        if (sort >= 1 && sort <= 16) {
+            boolean isPrime = sort % 2 == 0;
+            sortDirectionIndex = isPrime ? 1 : 0;
+
+            sortPropertiesIndex = (int) (Math.ceil((double) sort / 2) - 1);
+        }
 
         ArrayList<String> sortProperties = new ArrayList<>();
         sortProperties.add(SORT_PROPERTIES[sortPropertiesIndex]);
@@ -151,7 +155,7 @@ public class UserRESTController {
         Integer data;
 
         try {
-            boolean isEdit = user.getId() != 0;
+            boolean isEdit = user.getId() != null;
             message = isEdit ? "User edit " : "User add ";
 
             if (isEdit) {
@@ -173,6 +177,8 @@ public class UserRESTController {
             message = "User add failed - User already exists";
             data = 0;
         } catch (Exception e) {
+            e.printStackTrace();
+
             message = "User add failed - Internal Server Error";
             data = 0;
         }

@@ -59,13 +59,15 @@ public class User implements Serializable {
     @Column(name = "user_created_at", nullable = false)
     private Date createdAt;
 
-    @ManyToMany(mappedBy = "users")
+    @ManyToMany
+    @JoinTable(
+            name = "user_role",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
     private List<Role> roles = new ArrayList<>();
 
-    @OneToMany(
-            mappedBy = "user",
-            cascade = { CascadeType.ALL }
-    )
+    @Transient
     private List<Store> stores = new ArrayList<>();
 
     public User() {
